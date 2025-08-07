@@ -9,7 +9,7 @@ import { HttpModule } from '@nestjs/axios';
   controllers: [PokemonController],
   providers: [PokemonService],
   imports: [
-    HttpModule, // ✅ Aquí lo agregas
+    HttpModule, 
     MongooseModule.forFeature([
       {
         name: Pokemon.name,

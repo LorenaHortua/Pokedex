@@ -2,14 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete,  HttpCode, HttpStatu
 import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
-import { HttpService } from '@nestjs/axios'; // ✅ IMPORTANTE
-import { firstValueFrom } from 'rxjs'; // ✅ IMPORTANTE
+import { HttpService } from '@nestjs/axios'; 
+import { firstValueFrom } from 'rxjs'; 
 
 @Controller('pokemon')
 export class PokemonController {
   constructor(
     private readonly pokemonService: PokemonService,
-    private readonly httpService: HttpService // ✅ NECESARIO
+    private readonly httpService: HttpService 
   ) {}
 
   @HttpCode(HttpStatus.OK)
