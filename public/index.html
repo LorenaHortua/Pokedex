@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pokédex</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <h1>Pokédex</h1>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Buscar Pokémon por nombre...">
+  </div>
+
+  <div class="loader" id="loader">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Loading...">
+  </div>
+
+  <div id="pokemonGrid" class="grid"></div>
+
+  <div id="pokemonModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modalDetails"></div>
+    </div>
+  </div>
+
+  <script>
+    const grid = document.getElementById('pokemonGrid');
+    const modal = document.getElementById('pokemonModal');
+    const modalDetails = document.getElementById('modalDetails');
+    const loader = document.getElementById('loader');
+    const searchInput = document.getElementById('searchInput');
+
+    let allPokemonData = [];
+
+    async function loadPokemons(limit = 100) {
+      loader.style.display = 'block';
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`);
+      const data = await res.json();
+      for (const pokemon of data.results) {
+        await getPokemonData(pokemon.url);
+      }
+      loader.style.display = 'none';
+    }
+
+    async function getPokemonData(url) {
+      const res = await fetch(url);
+      const data = await res.json();
+      allPokemonData.push(data);
+      renderPokemonCard(data);
+    }
+
+    function renderPokemonCard(data) {
+      const div = document.createElement('div');
+      div.classList.add('pokemon-card');
+      div.setAttribute('data-name', data.name.toLowerCase());
+      div.innerHTML = `
+        <img src="${data.sprites.front_default}" alt="${data.name}">
+        <h4>${data.name.toUpperCase()}</h4>
+      `;
+      div.onclick = () => showDetails(data);
+      grid.appendChild(div);
+    }
+
+    async function showDetails(data) {
+  try {
+    // Registrar en tu API
+    const response = await fetch(`http://localhost:3001/api/pokemon/register/${data.name}`, {
+      method: 'POST'
+    });
+    if (!response.ok) throw new Error(`Error al registrar: ${response.statusText}`);
+    const pokemonFromAPI = await response.json();
+
+    // Obtener detalles desde la PokeAPI
+    const pokeApiRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${data.name}`);
+    const pokeApiData = await pokeApiRes.json();
+
+    // Construir arrays para tipos y habilidades
+    const tipos = pokeApiData.types.map(t => t.type.name).join(', ');
+    const habilidades = pokeApiData.abilities.map(a => a.ability.name).join(', ');
+
+    // Mostrar en el modal
+    modalDetails.innerHTML = `
+      <img src="${pokemonFromAPI.image}" alt="${pokemonFromAPI.name}">
+      <h2>${pokemonFromAPI.name.toUpperCase()}</h2>
+      <p><strong>No:</strong> ${pokemonFromAPI.no}</p>
+      <p><strong>Altura:</strong> ${pokeApiData.height / 10} m</p>
+      <p><strong>Peso:</strong> ${pokeApiData.weight / 10} kg</p>
+      <p><strong>Tipos:</strong> ${tipos}</p>
+      <p><strong>Habilidades:</strong> ${habilidades}</p>
+    `;
+    modal.style.display = 'flex';
+  } catch (error) {
+    console.error('Error al mostrar detalles:', error);
+  }
+}
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    searchInput.addEventListener('input', function () {
+      const term = this.value.toLowerCase();
+      const cards = document.querySelectorAll('.pokemon-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        card.style.display = name.includes(term) ? 'block' : 'none';
+      });
+    });
+
+    loadPokemons();
+  </script>
+</body>
+</html>
+
+

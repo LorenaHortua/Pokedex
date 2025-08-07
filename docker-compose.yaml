@@ -1,0 +1,12 @@
+services:
+  db:
+    image: mongo
+    restart: always
+    # puerto del proyecto : puerto de salida del contenedor
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: nest-pokemon
+    # configurando el volumen para no perder datos cada que cerremos el contenedor
+    volumes:
+      - ./mongo:/data/db
